@@ -1,0 +1,228 @@
+{
+  "name": "colab-sync",
+  "displayName": "Colab Sync",
+  "description": "Bidirectional synchronization between a local VS Code workspace and a Google Colab notebook runtime, with Python and R kernel support.",
+  "version": "1.0.31",
+  "publisher": "sujitkumar",
+  "license": "Apache-2.0",
+  "icon": "images/icon.png",
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "categories": [
+    "Data Science"
+  ],
+  "keywords": [
+    "colab",
+    "jupyter",
+    "sync",
+    "notebook",
+    "data-science",
+    "remote-development"
+  ],
+  "homepage": "https://datainferix.com",
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:colabsync.connect",
+    "onCommand:colabsync.disconnect",
+    "onCommand:colabsync.syncNow",
+    "onCommand:colabsync.push",
+    "onCommand:colabsync.pull",
+    "onCommand:colabsync.initializeProject",
+    "onCommand:colabsync.showStatus",
+    "onCommand:colabsync.resolveConflicts",
+    "onCommand:colabsync.openSettings",
+    "onCommand:colabsync.reconnect"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "colabsync.connect",
+        "title": "Connect",
+        "category": "Colab Sync",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "colabsync.disconnect",
+        "title": "Disconnect",
+        "category": "Colab Sync",
+        "icon": "$(debug-disconnect)"
+      },
+      {
+        "command": "colabsync.syncNow",
+        "title": "Sync Now",
+        "category": "Colab Sync",
+        "icon": "$(sync)"
+      },
+      {
+        "command": "colabsync.push",
+        "title": "Push Local Changes",
+        "category": "Colab Sync",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "colabsync.pull",
+        "title": "Pull Remote Changes",
+        "category": "Colab Sync",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "colabsync.initializeProject",
+        "title": "Initialize Project",
+        "category": "Colab Sync",
+        "icon": "$(rocket)"
+      },
+      {
+        "command": "colabsync.showStatus",
+        "title": "Show Status",
+        "category": "Colab Sync",
+        "icon": "$(info)"
+      },
+      {
+        "command": "colabsync.resolveConflicts",
+        "title": "Resolve Conflicts",
+        "category": "Colab Sync",
+        "icon": "$(warning)"
+      },
+      {
+        "command": "colabsync.openSettings",
+        "title": "Settings",
+        "category": "Colab Sync",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "colabsync.reconnect",
+        "title": "Reconnect Runtime",
+        "category": "Colab Sync",
+        "icon": "$(debug-restart)"
+      }
+    ],
+    "configuration": {
+      "title": "Colab Sync",
+      "properties": {
+        "colabsync.logLevel": {
+          "type": "string",
+          "enum": [
+            "error",
+            "warn",
+            "info",
+            "debug"
+          ],
+          "default": "info",
+          "description": "Verbosity of the ColabSync output channel."
+        },
+        "colabsync.autoSync": {
+          "type": "boolean",
+          "default": true,
+          "description": "Default auto-sync behavior used when initializing a new project configuration."
+        },
+        "colabsync.pollInterval": {
+          "type": "number",
+          "default": 10,
+          "minimum": 0,
+          "description": "Default remote polling interval (seconds) used when initializing a new project configuration. 10 seconds recommended. 0 disables polling."
+        },
+        "colabsync.transferConcurrency": {
+          "type": "number",
+          "default": 3,
+          "minimum": 1,
+          "maximum": 8,
+          "description": "Default number of concurrent file transfers."
+        },
+        "colabsync.maxFileSize": {
+          "type": "number",
+          "default": 524288000,
+          "description": "Default maximum file size in bytes that ColabSync will transfer."
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "colabsync",
+          "title": "Colab Sync",
+          "icon": "images/activity-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "colabsync": [
+        {
+          "id": "colabsync.statusView",
+          "name": "Status",
+          "icon": "$(cloud)"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "colabsync.statusView",
+        "contents": "No Colab runtime connected.\n[Connect](command:colabsync.connect)\n[Initialize Project](command:colabsync.initializeProject)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "colabsync.syncNow",
+          "when": "view == colabsync.statusView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "colabsync.connect",
+          "when": "view == colabsync.statusView",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "colabsync.resolveConflicts",
+          "when": "view == colabsync.statusView && viewItem == conflict",
+          "group": "inline"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "compile:tests": "tsc -p tsconfig.test.json",
+    "lint": "eslint src test",
+    "pretest": "npm run compile",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "mocha --require tsx/cjs \"test/unit/**/*.test.ts\"",
+    "test:integration": "mocha --require tsx/cjs --timeout 120000 \"test/integration/**/*.test.ts\"",
+    "test:vscode": "npm run compile && npm run compile:tests && node ./out-test/test/vscode/runTest.js",
+    "package": "vsce package",
+    "zip:source": "node scripts/zip-source.js"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.10.0",
+    "@types/vscode": "^1.99.0",
+    "@vscode/test-electron": "^2.4.1",
+    "@vscode/vsce": "^3.6.0",
+    "archiver": "^7.0.1",
+    "eslint": "^9.39.4",
+    "glob": "^10.5.0",
+    "mocha": "^11.7.0",
+    "tsx": "^4.22.4",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.57.1"
+  },
+  "extensionDependencies": [
+    "ms-toolsai.jupyter",
+    "google.colab"
+  ],
+  "author": {
+    "name": "Sujit Kumar"
+  },
+  "pricing": "Free",
+  "preview": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sujitkm/Colab-Sync.git"
+  }
+}
